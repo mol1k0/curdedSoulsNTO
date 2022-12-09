@@ -1,0 +1,58 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class InventoryUI : MonoBehaviour
+{
+
+    public Button woodAddButton;
+    [SerializeField] InventoryDot[] dots;
+
+
+    public void AddNewItem(Sprite newItemImage, string type){
+        if (type == "wood"){
+            woodAddButton.interactable = true;
+        }
+        InventoryDot emptyDot = FindEmptyDot();
+        emptyDot.AddItem();
+        emptyDot.itemImage.sprite = newItemImage;
+        emptyDot.type = type;
+        emptyDot.itemImage.gameObject.SetActive(true);
+    }
+
+    public int CheckWoodCount(){
+        int count = 0;
+        for(int i = 0; i < dots.Length; i++){
+            if (dots[i].type == "wood"){
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    public void DeleteWood(){
+        for(int i = 0; i < dots.Length; i++){
+            if (dots[i].type == "wood"){
+                dots[i].DestroyItem();
+
+                if (CheckWoodCount() == 0){
+                    woodAddButton.interactable = false;
+                }
+                
+                break;
+            }
+        }
+    }
+
+    public InventoryDot FindEmptyDot(){
+        for(int i = 0; i < dots.Length; i++){
+            if (dots[i].empty == true){
+                return dots[i];
+            }
+        }
+
+        return null;
+    }
+}
