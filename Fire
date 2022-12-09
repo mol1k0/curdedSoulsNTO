@@ -1,0 +1,43 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Fire : MonoBehaviour
+{
+
+    public Animator anim;
+    public GameObject vfx;
+    public GameObject fireObj;
+    public SpriteRenderer fireZone;
+    public InventoryUI inventory;
+    public float healthSpeed;
+
+    public bool fireActive = false;
+
+
+    void FixedUpdate(){
+        fireZone.color = new Color(0.86f, 0.82f, 0.29f, healthSpeed * 1.8f * Time.fixedDeltaTime);
+    }
+
+    public void AddWood(){
+        if (inventory.CheckWoodCount() > 0){
+            fireObj.SetActive(true);
+            inventory.DeleteWood();
+            healthSpeed += 2f;
+            anim.SetBool("active", true);
+            StartCoroutine(ResetSpeed());
+            vfx.SetActive(true);
+        }
+    }
+
+    IEnumerator ResetSpeed(){
+        yield return new WaitForSeconds(5f);
+        anim.SetBool("active", false);
+        healthSpeed -= 2f;
+        vfx.SetActive(false);
+
+        if (healthSpeed <= 0){
+            fireObj.SetActive(false);
+        }
+    }
+}
