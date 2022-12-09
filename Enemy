@@ -1,0 +1,83 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Enemy : MonoBehaviour
+{
+
+
+    Animator anim;
+    Rigidbody2D rb;
+    GameObject target;
+    public GameObject dieParticle;
+    public float speed;
+    public float health;
+    public float damage;
+    public bool die = false;
+    bool attackReload = false;
+    public bool spawnerEnemy = false;
+
+    GameObject spawner;
+
+    void Start(){
+        anim = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody2D>();
+        target = FindObjectOfType<Player>().gameObject;
+        spawner = FindObjectOfType<EnemySpawner>().gameObject;
+
+        if (spawnerEnemy == false){
+            StartCoroutine(Stay());
+        }
+    }
+
+    void FixedUpdate(){
+        if (die) return;
+
+        if (target.transform.position.x < transform.position.x){
+            transform.localScale = new Vector3(1f, 1f, 1f);
+        } else{
+            transform.localScale = new Vector3(-1f, 1f, 1f);
+        }
+        transform.position = Vector2.MoveTowards(this.transform.position, target.transform.position, speed * Time.fixedDeltaTime);
+    }
+
+    public void Damage(float damage){
+        health -= damage;
+        anim.SetTrigger("damage");
+
+        if (health <= 0){
+            if (spawnerEnemy == true){
+                spawner.GetComponent<EnemySpawner>().enemiesOnMap -= 1;
+            }
+            GameObject vfx = Instantiate(dieParticle, transform.position, Quaternion.identity);
+            Destroy(vfx, 0.8f);
+            Destroy(gameObject);
+        }
+    }
+
+    void Attack(){
+        attackReload = true;
+        anim.SetTrigger("attack");
+        StartCoroutine(AttackReload());
+    }
+
+    IEnumerator Stay(){
+        yield return new WaitForSeconds(1f);
+    }
+
+    
+    IEnumerator AttackReload(){
+        yield return new WaitForSeconds(2f);
+        attackReload = false;
+    }
+
+
+    void OnTriggerStay2D(Collider2D other){
+        if (other.gameObject.tag == "player"){
+            if (attackReload == false){
+                Attack();
+                other.GetComponent<Player>().Damage(damage);
+            }
+        }
+    }
+}
