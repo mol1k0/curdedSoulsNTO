@@ -1,0 +1,140 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Player : MonoBehaviour
+{
+
+
+    public Animator anim;
+    Vector2 movement;
+    Rigidbody2D rb;
+    public float speed;
+    public float health;
+    public float food;
+    public float speedOfHunger;
+    public Image healthBar;
+    public Image foodBar;
+    public GameObject damageVFX;
+    float maxHealth;
+    float maxFood;
+
+    public GameObject swordObj;
+
+    float startSpeed;
+    public bool facingRight = true;
+
+    public InventoryUI inventory;
+    public Sprite[] itemImages;
+    
+    public Fire fire;
+    public GameObject woodAddButton;
+    [SerializeField] bool fireHealing;
+
+    bool reload = false;
+    bool die = false;
+
+    void Awake(){
+        rb = GetComponent<Rigidbody2D>();
+
+        startSpeed = speed;
+        maxHealth = health;
+        maxFood = food;
+    }
+
+    void Start(){
+        StartCoroutine(Food()); 
+    }
+
+    void Update(){
+        if (die == true) return;
+
+        movement.x = Input.GetAxisRaw("Horizontal");
+        movement.y = Input.GetAxisRaw("Vertical");
+
+        healthBar.fillAmount = health / maxHealth;
+        foodBar.fillAmount = food / maxFood;
+
+        if (fireHealing && reload == false && health < 100){
+            reload = true;
+            health += fire.healthSpeed;
+            StartCoroutine(ReloadHaeling());
+        }
+
+        Animate();
+    }
+
+    void Animate(){
+        if (Math.Abs(movement.x) > 0.2f || Math.Abs(movement.y) > 0.2f){
+            anim.SetBool("walk", true);
+        }else{
+            anim.SetBool("walk", false);
+        }
+    }
+
+    void FixedUpdate() {
+        rb.MovePosition(rb.position + movement * speed * Time.fixedDeltaTime);
+    }
+
+    public void Damage(float damage){
+        health -= damage;
+        GameObject vfx = Instantiate(damageVFX, transform.position, Quaternion.identity);
+        Destroy(vfx, 0.8f);
+        if (health <= 0){
+            die = true;
+            swordObj.SetActive(false);
+            anim.SetTrigger("die");
+            Destroy(gameObject, 1f);
+        }
+    }
+
+    public void Flip(){
+        facingRight = !facingRight;
+        Vector2 scaleChange = transform.localScale;
+        scaleChange.x *= -1;
+        transform.localScale = scaleChange;
+    }
+
+    IEnumerator DisableButton(){
+        yield return new WaitForSeconds(2f);
+        woodAddButton.SetActive(false);
+    }
+
+    IEnumerator ReloadHaeling(){
+        yield return new WaitForSeconds(0.5f);
+        reload = false;
+    }
+
+    void Hunger(){
+        StartCoroutine(Food());
+    }
+
+    IEnumerator Food(){
+        yield return new WaitForSeconds(0.25f);
+        food -= speedOfHunger;
+        Hunger();
+    }
+
+    private void OnTriggerEnter2D(Collider2D other){
+        if (other.gameObject.tag == "fire"){
+            woodAddButton.SetActive(true);
+            fireHealing = true;
+        }
+
+        if (other.gameObject.tag == "wood"){
+            if (inventory.FindEmptyDot() != null){
+                inventory.AddNewItem(itemImages[0], "wood");
+                Destroy(other.gameObject);
+            }
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other) {
+        if (other.gameObject.tag == "fire"){
+            StartCoroutine(DisableButton());
+            fireHealing = false;
+        }
+    }
+}
