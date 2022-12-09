@@ -1,0 +1,29 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class RenderManager : MonoBehaviour
+{
+    Renderer rend;
+    [SerializeField] int sortingOrderBase = 5;
+    [SerializeField] int offset = 0;
+    [SerializeField] bool runOnluOnce = false;
+
+    float timer;
+    float timerMax = 0.1f;
+
+    void Awake() {
+        rend = gameObject.GetComponent<Renderer>();
+    }
+
+    void LateUpdate() {
+        timer -= Time.deltaTime;
+        if (timer <= 0f){
+            timer = timerMax;
+            rend.sortingOrder = (int)(sortingOrderBase - transform.position.y - offset);
+            if (runOnluOnce){
+                Destroy(this);
+            }
+        }
+    }
+}
