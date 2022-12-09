@@ -1,0 +1,29 @@
+using UnityEngine;
+using System.Collections;
+
+public class CameraPosition : MonoBehaviour {
+
+
+    Vector3 targetPos;
+	public float interpVelocity;
+	public float minDistance;
+	public float followDistance;
+	public GameObject target;
+	public Vector3 offset;
+
+	void Start(){
+		targetPos = transform.position;
+	}
+	
+	void FixedUpdate(){
+		if(target){
+			Vector3 pos = transform.position;
+			pos.z = target.transform.position.z;
+			Vector3 targetDirection = (target.transform.position - pos);
+			interpVelocity = targetDirection.magnitude * 5f;
+			targetPos = transform.position + (targetDirection.normalized * interpVelocity * 2 * Time.deltaTime);
+			transform.position = Vector3.Lerp( transform.position, targetPos + offset, 0.25f);
+
+		}
+	}
+}
