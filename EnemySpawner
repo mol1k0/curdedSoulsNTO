@@ -1,0 +1,51 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class EnemySpawner : MonoBehaviour
+{
+
+
+    public GameObject[] enemies;
+    public Transform[] positions;
+    public float delay;
+    public int maxEnemyCount;
+    public int enemiesOnMap;
+    bool spawn = true;
+    float timer;
+
+    void Start(){
+        StartCoroutine(SpawnDelay());
+    }
+
+    void FixedUpdate() {
+        timer += Time.fixedDeltaTime;
+
+        if (timer >= 60f){
+            delay = 3f;
+            maxEnemyCount = 10;
+        } else if (timer >= 120f){
+            delay = 2f;
+            maxEnemyCount = 12;
+        }
+    }
+
+    void Spawn(){
+        if (spawn == false) return;
+
+        if (maxEnemyCount > enemiesOnMap){
+            enemiesOnMap++;
+            GameObject currentEnemy = enemies[Random.Range(0, enemies.Length)];
+            Transform currentPos = positions[Random.Range(0, positions.Length)];
+            GameObject newEnemy = Instantiate(currentEnemy, currentPos.position, Quaternion.identity);
+            newEnemy.GetComponent<Enemy>().spawnerEnemy = true;
+            StartCoroutine(SpawnDelay());
+        }
+    }
+
+    IEnumerator SpawnDelay(){
+        yield return new WaitForSeconds(delay);
+        spawn = true;
+        Spawn();
+    }
+}
