@@ -1,0 +1,34 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CurseSpawner : MonoBehaviour
+{
+
+    public GameObject curse;
+    public Transform[] positions;
+    public float delay;
+    bool spawn = true;
+    public bool curseSpawned = false;
+
+    void Start(){
+        StartCoroutine(SpawnDelay());
+    }
+
+    void Spawn(){
+        if (spawn == false) return;
+
+        if (!curseSpawned){
+            curseSpawned = true;
+            Transform currentPos = positions[Random.Range(0, positions.Length)];
+            Instantiate(curse, currentPos.position, Quaternion.identity);
+            StartCoroutine(SpawnDelay());
+        }
+    }
+
+    IEnumerator SpawnDelay(){
+        yield return new WaitForSeconds(delay);
+        spawn = true;
+        Spawn();
+    }
+}
