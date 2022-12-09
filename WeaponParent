@@ -1,0 +1,81 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class WeaponParent : MonoBehaviour
+{
+
+    public BoxCollider2D collider;
+    public SpriteRenderer playerRenderer, weaponRenderer;
+    public Player player;
+
+    public Animator anim;
+    public float damage;
+    public float delay;
+    bool attackReload;
+
+
+    void Update(){
+
+        Vector2 dir = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+        Quaternion rotation = Quaternion.AngleAxis(angle - 90, Vector3.forward);
+        transform.rotation = rotation;
+
+        if (transform.eulerAngles.z > 0 && transform.eulerAngles.z < 180){
+            weaponRenderer.sortingOrder = playerRenderer.sortingOrder + 1;
+            if (player.facingRight == true){
+                if (Math.Abs(dir.x) > 2f){
+                    player.Flip();
+                }
+            } 
+        } else{
+            weaponRenderer.sortingOrder = playerRenderer.sortingOrder - 1;
+            if (player.facingRight == false){
+                if (Math.Abs(dir.x) > 2f){
+                    player.Flip();
+                }
+            } 
+        }
+
+        if (Input.GetMouseButtonDown(0)){
+            Attack();
+        }
+    }
+
+
+    public void Attack(){
+        if (attackReload) return;
+
+        attackReload = true;
+        anim.SetTrigger("attack");
+
+        collider.enabled = true;
+        StartCoroutine(AttackDelay());
+        StartCoroutine(ColliderDelay());
+    }
+
+    IEnumerator ColliderDelay(){
+        yield return new WaitForSeconds(0.1f);
+        collider.enabled = false;
+    }
+
+    IEnumerator AttackDelay(){
+        yield return new WaitForSeconds(delay);
+        attackReload = false;
+    }
+
+    private void OnCollisionEnter2D(Collision2D other) {
+        if (other.gameObject.tag == "curse"){
+            other.gameObject.GetComponent<Curse>().Damage(damage);
+        }    
+    }
+
+    private void OnTriggerEnter2D(Collider2D other){
+        if (other.gameObject.tag == "enemy"){
+            other.GetComponent<Enemy>().Damage(damage);
+        }
+    }
+}
