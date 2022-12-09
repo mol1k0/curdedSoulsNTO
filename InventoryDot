@@ -1,0 +1,24 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class InventoryDot : MonoBehaviour
+{
+
+
+    public Image itemImage;
+    public bool empty = true;
+    public string type;
+
+
+    public void AddItem(){
+        empty = false;
+    }
+
+    public void DestroyItem(){
+        itemImage.gameObject.SetActive(false);
+        empty = true;
+        type = "";
+    }
+}
